@@ -95,8 +95,19 @@ access.
 These were determined empirically and should not be re-litigated:
 
 - The downloaded file (`1,944,064` bytes, SHA256
-  `B1D74B9CFF15FCF6FE2FE0E4A68CCDCB4E0247B64A5A0011F523E1C90C62BA16`) is **not an
-  installer**. It *is* the application — PE32 i386 GUI, overlay 0 bytes, Delphi.
+  `B1D74B9CFF15FCF6FE2FE0E4A68CCDCB4E0247B64A5A0011F523E1C90C62BA16`, SHA1
+  `8F0745D21BC0A4296BF6B527EC39009AD0E0BEA9`) is **not an installer**. It *is* the
+  application — PE32 i386 GUI, overlay 0 bytes, Delphi.
+- The original 2003 delivery *was* a WinZip self-extractor (`693,760` bytes) whose ZIP
+  central directory holds exactly **one** entry: `Lokprogrammer_V151.exe`, uncompressed
+  `1,944,064` bytes. ESU replaced the self-extractor with the bare application between
+  Jan 2004 and Jan 2006 under the same filename and version. Nothing was left out.
+- ESU's own install instruction was "unzip to a directory, default `c:\lokprogrammer`".
+  There was never a setup, a registry entry, or a driver. Running it from
+  `C:\LokProgrammer` is literally the vendor default, not a workaround.
+- Official V1.51 requirements: Pentium 90, 32 MB RAM, one free COM port,
+  Windows 98/98SE/ME/2000/**XP**, **DirectX 6.1+**, sound card with working drivers.
+  The esu.eu download page understates this as "95/98/2000".
 - It runs on Windows 10 x64 **unmodified**: no installation, no compatibility shim, no
   signature, no Mark-of-the-Web removal. All 20 static imports are Windows system DLLs.
 - It is fully portable — writes no files and no registry keys. The only registry paths it
@@ -146,5 +157,19 @@ ESU's download licence explicitly forbids passing the software to third parties
 extracted part of it to a repository — public or private — is redistribution.
 
 `.gitignore` excludes it. Reproducibility is preserved instead through the documented
-download URL, the expected byte size and the SHA256 above. ESU publishes no checksums of
-its own, so that hash is *our* baseline, not a vendor reference.
+download URL, the expected byte size and the hashes above.
+
+ESU publishes no checksums of its own — but an **independent historical reference exists**:
+the Internet Archive's CDX index records SHA1 `8F0745D21BC0A4296BF6B527EC39009AD0E0BEA9`
+(Base32 `R4DULUQ3YCSCS27WWUT6YOIATLIOBPVJ`) for
+`loksound.de/download/software/50450_LoPro_V151.exe` in the captures of 2006-01-16,
+2006-01-17 and 2006-02-24. The current esu.eu download matches it bit for bit. The 2003
+and 2004 captures carry a different digest because they are the SFX wrapper, not the
+payload. So the file *can* be verified against something other than our own baseline.
+
+### Sound material is a separate download
+
+The program ships without any audio content — that was true in 2003 as well. ESU's factory
+sounds for LokSound "classic" are still available under Download → Geräuschdateien →
+Generation 1. Without them the application runs correctly but has nothing to write to a
+decoder. Do not treat "no sounds available" as a defect of the portable setup.

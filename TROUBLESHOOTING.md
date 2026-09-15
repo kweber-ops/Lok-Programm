@@ -133,6 +133,34 @@ Programm und meint dasselbe.
 
 ---
 
+## Es gibt nichts zum Aufspielen — keine Sounds vorhanden
+
+**Kein Fehler des portablen Betriebs.** Das Programm wurde nie mit Audiomaterial
+ausgeliefert. Das Originalarchiv von 2003 enthielt nachweislich **genau eine Datei** —
+die Anwendung. Die Geräuschdateien waren auch damals ein separater Download.
+
+ESUs Werkssounds für LokSound „classic" gibt es weiterhin:
+
+> esu.eu → Download → Geräuschdateien → **Generation 1**
+> („Alle Soundfiles für den ersten LokSound classic Decoder", ca. 1,86 MB)
+
+Das sind die WAV-Bausteine und fertigen `*.ESU`-Projekte. Ohne sie läuft die Software
+einwandfrei, du hast nur nichts, was du in einen Decoder schreiben könntest.
+
+### Das Feld „1 MegaBit"
+
+Ebenfalls kein Defekt. Das ist die **Sound-Flashgröße des Decoders**, wählbar von 1 bis
+4 MBit (entspricht 12, 24, 36 bzw. 48 Sekunden). 1 MBit ist der Vorgabewert. Der Wert
+muss zum tatsächlichen Decoder passen.
+
+### Die Bedienungsanleitung
+
+`50450_LokProgrammer_DE_Betriebsanleitung.pdf` bietet ESU heute nicht mehr an. Sie ist nur
+noch über das Internet Archive erreichbar. Das Referenzhandbuch des Nachfolgers
+53450/53451 beschreibt ausdrücklich **andere** Hardware und passt nur teilweise.
+
+---
+
 ## Einstellungen gehen verloren
 
 Die Anwendung ist vollständig portabel — sie schreibt weder Dateien noch Registry-Werte

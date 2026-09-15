@@ -97,6 +97,30 @@ Diese Aussagen standen in früheren Ständen und waren falsch:
 - „Fehlende Hilfe und fehlendes Drucken sind Windows-10-Schäden." — Beides ist
   Originalzustand von V1.51.
 
+### Nachträglich belegt
+
+Recherche gegen das Internet Archive und ESUs eigene Release Notes, nach dem ersten Stand:
+
+- **Die Datei ist bitidentisch mit ESUs Originalnutzlast.** SHA1
+  `8F0745D21BC0A4296BF6B527EC39009AD0E0BEA9` stimmt mit dem Wayback-CDX-Digest der
+  Captures vom 16.01.2006, 17.01.2006 und 24.02.2006 überein. Damit existiert doch eine
+  unabhängige Vergleichsmöglichkeit — die frühere Aussage „es gibt nichts, wogegen man
+  prüfen könnte" war zu pessimistisch.
+- **Die Originalauslieferung war ein WinZip-Selbstentpacker** (693.760 Bytes), dessen
+  ZIP-Verzeichnis **genau einen** Eintrag enthält: `Lokprogrammer_V151.exe`, entpackt
+  1.944.064 Bytes. ESU hat den Entpacker zwischen Januar 2004 und Januar 2006 durch die
+  blanke Anwendung ersetzt, bei gleichem Dateinamen und gleicher Version. Es fehlt nichts.
+- **`C:\LokProgrammer` ist ESUs eigenes Vorgabeverzeichnis.** Die Installationsanweisung
+  lautete wörtlich: entpacken, Voreinstellung `c:\lokprogrammer`. Die Wahl war also nicht
+  nur technisch richtig, sondern entspricht der Herstellervorgabe.
+- **Systemvoraussetzungen V1.51** laut Release Notes: Pentium 90, 32 MB RAM, ein freier
+  COM-Port, Windows 98/98SE/ME/2000/**XP**, **DirectX 6.1+**, Soundkarte. Die
+  esu.eu-Downloadseite nennt nur „95/98/2000" und untertreibt damit.
+- **Sound- und Dokumentationsmaterial waren immer separate Downloads.** Die Werkssounds
+  für LokSound „classic" stehen weiterhin unter Geräuschdateien → Generation 1 bereit.
+- **„1 MegaBit" ist kein Defekt**, sondern die Sound-Flashgröße des Decoders
+  (1–4 MBit = 12/24/36/48 Sekunden), Vorgabewert 1 MBit.
+
 ### Bekannte Grenzen
 
 - Die Kette 50450 → COM1 → LokSound classic ist **ohne angeschlossene Hardware nicht
