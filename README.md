@@ -37,6 +37,42 @@ erst auf Unbedenklichkeit zu prüfen und dann tatsächlich zu betreiben.
 
 ---
 
+## Schnellstart — zwei Befehle zum kompletten Setup
+
+```powershell
+git clone https://github.com/kweber-ops/Lok-Programm.git
+cd Lok-Programm
+.\Deploy-LokProgrammer.ps1
+```
+
+Das Skript holt die Software direkt von esu.eu, prüft Größe, SHA1 **und** SHA256 gegen
+die hinterlegten Sollwerte und legt sie nach `C:\LokProgrammer`. Weicht auch nur ein Byte
+ab, bricht es ab.
+
+### Warum die EXE nicht im Repository liegt
+
+ESUs Download-Lizenz erlaubt ausdrücklich nur den **persönlichen Gebrauch** (§1.1) und
+verbietet, den Inhalt „an Dritte zu lizenzieren, kopieren, reproduzieren, übertragen"
+(§2.3). Ein öffentliches Repository wäre genau das. Die Software bleibt deshalb dort, wo
+der Hersteller sie anbietet — und dieses Repository holt sie verifiziert ab.
+
+Praktisch ist das sogar besser als eine eingecheckte Binärdatei: Du bekommst die Datei
+vom Hersteller **plus** den Nachweis, dass sie bitgenau der Auslieferung von 2006
+entspricht. Der Referenz-SHA1 stammt aus dem CDX-Index des Internet Archive
+(Captures vom 16.01., 17.01. und 24.02.2006) und ist damit unabhängig von uns *und*
+von ESU.
+
+| | Sollwert |
+|---|---|
+| Größe | `1.944.064` Bytes |
+| SHA1 | `8F0745D21BC0A4296BF6B527EC39009AD0E0BEA9` |
+| SHA256 | `B1D74B9CFF15FCF6FE2FE0E4A68CCDCB4E0247B64A5A0011F523E1C90C62BA16` |
+
+Zusätzlich brauchst du für echte Arbeit noch die **Sounddateien** — auch die waren schon
+2003 ein separater Download: esu.eu → Download → Geräuschdateien → *Generation 1*.
+
+---
+
 ## Die wichtigste Erkenntnis zuerst
 
 **Windows Sandbox kann COM1 nicht durchreichen.** Das `.wsb`-Schema

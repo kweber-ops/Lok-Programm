@@ -34,9 +34,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Die einzige vom Hersteller ableitbare Sollgroesse. ESU veroeffentlicht
-# KEINE Pruefsummen - mehr als das gibt es nicht zum Abgleichen.
-$EXPECTED_BYTES = 1944064
+# Sollwerte. ESU selbst veroeffentlicht keine Pruefsummen, aber es gibt
+# eine unabhaengige historische Referenz: der CDX-Index des Internet
+# Archive fuehrt fuer 50450_LoPro_V151.exe genau diesen SHA1 in den
+# Captures vom 16.01., 17.01. und 24.02.2006. Stimmt der ueberein, ist
+# die Datei bitgenau das, was ESU damals ausgeliefert hat.
+$EXPECTED_BYTES  = 1944064
+$EXPECTED_SHA1   = '8F0745D21BC0A4296BF6B527EC39009AD0E0BEA9'
+$EXPECTED_SHA256 = 'B1D74B9CFF15FCF6FE2FE0E4A68CCDCB4E0247B64A5A0011F523E1C90C62BA16'
 $DL_URL = 'https://www.esu.eu/download/software/fruehere-produkte/?no_cache=1&tx_esudownloads_pi1%5BdownloadItem%5D=a7726bd70d8ab97ca0007cc26f4cfa1f'
 $DL_NAME = '50450_LoPro_V151.exe'
 
@@ -100,19 +105,34 @@ if ($SkipDownload -or (Test-Path $archive)) {
     Say 'Geladen.' Green
 }
 
-$fi = Get-Item $archive
-$sha = (Get-FileHash $archive -Algorithm SHA256).Hash
-Say "Groesse : $('{0:N0}' -f $fi.Length) Bytes" $(if ($fi.Length -eq $EXPECTED_BYTES) { 'Green' } else { 'Yellow' })
-if ($fi.Length -ne $EXPECTED_BYTES) {
-    Say "ABWEICHUNG von der erwarteten Groesse ($('{0:N0}' -f $EXPECTED_BYTES))." Yellow
-    Say 'Das muss nichts heissen - ESU kann die Datei ersetzt haben.' DarkGray
-}
-Say "SHA256  : $sha" White
+$fi   = Get-Item $archive
+$sha  = (Get-FileHash $archive -Algorithm SHA256).Hash
+$sha1 = (Get-FileHash $archive -Algorithm SHA1).Hash
+
+$okSize = $fi.Length -eq $EXPECTED_BYTES
+$okSha1 = $sha1 -eq $EXPECTED_SHA1
+$okSha  = $sha  -eq $EXPECTED_SHA256
+
+Say "Groesse : $('{0:N0}' -f $fi.Length) Bytes" $(if ($okSize) { 'Green' } else { 'Red' })
+Say "SHA1    : $sha1" $(if ($okSha1) { 'Green' } else { 'Red' })
+Say "SHA256  : $sha"  $(if ($okSha)  { 'Green' } else { 'Red' })
 Say ''
-Say 'ESU veroeffentlicht KEINE Pruefsummen. Es gibt nichts, wogegen sich' DarkGray
-Say 'dieser Hash abgleichen liesse. Halte ihn als EIGENE Baseline fest,' DarkGray
-Say 'um spaetere Veraenderungen zu bemerken. Zweitmeinung:' DarkGray
-Say "  https://www.virustotal.com/gui/file/$sha" White
+
+if ($okSize -and $okSha1 -and $okSha) {
+    Say 'VERIFIZIERT - bitgenau identisch mit ESUs Auslieferung.' Green
+    Say 'Der SHA1 stimmt mit dem Internet-Archive-Digest von 2006 ueberein.' DarkGray
+} else {
+    Say 'ABWEICHUNG von den erwarteten Werten!' Red
+    if (-not $okSize) { Say "  Groesse soll $('{0:N0}' -f $EXPECTED_BYTES) Bytes sein." Red }
+    if (-not $okSha1) { Say "  SHA1 soll $EXPECTED_SHA1 sein." Red }
+    Say ''
+    Say 'Moegliche Ursachen: ESU hat die Datei ersetzt, der Download war' Yellow
+    Say 'unvollstaendig, oder die Datei stammt nicht von esu.eu.' Yellow
+    Say 'NICHT ausfuehren, bevor das geklaert ist. Zweitmeinung:' Yellow
+    Say "  https://www.virustotal.com/gui/file/$sha" White
+    $w = Read-Host '  Trotzdem fortfahren? (j/n)'
+    if ($w -notmatch '^[jJyY]') { Say 'Abgebrochen.' Yellow; return }
+}
 
 Say ''
 Say "Installer-Architektur: $(Get-Bitness $archive)" Cyan
