@@ -1,0 +1,18 @@
+# ESU-Programmbinaerdatei NIEMALS committen.
+# Die Download-Lizenz von ESU untersagt die Weitergabe an Dritte
+# ausdruecklich (Paragraph 2.3). Ein Repository - auch ein privates -
+# ist eine Weitergabe.
+# Reproduzierbarkeit laeuft stattdessen ueber die dokumentierte
+# Download-URL, die Sollgroesse und den SHA256 in CLAUDE.md.
+*.exe
+*.zip
+*.msi
+*.cab
+shared/
+extracted/
+out/
+
+# Analyseergebnisse und Registry-Sicherungen
+*.reg
+AppCompatFlags-Layers-backup.reg
+*.log

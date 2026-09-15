@@ -1,0 +1,40 @@
+<Configuration>
+
+  <!-- =====================================================================
+       STUFE 1 - ANALYSE
+       Netzwerk AN, damit die Datei direkt in der Sandbox geladen werden
+       kann und der Host sie nie zu sehen bekommt.
+       Der Installer wird hier NICHT ausgefuehrt, nur analysiert.
+       ===================================================================== -->
+
+  <!-- ProtectedClient bewusst Disable: In Stufe 1 wird NICHTS ausgefuehrt,
+       der Schutz braechte hier fast nichts - blockiert aber die
+       Zwischenablage. Ohne sie kaeme der SHA256 nicht heraus, weil alle
+       Mounts read-only sind. In Stufe 2 steht er auf Enable. -->
+  <Networking>Default</Networking>
+  <VGpu>Disable</VGpu>
+  <ProtectedClient>Disable</ProtectedClient>
+  <AudioInput>Disable</AudioInput>
+  <VideoInput>Disable</VideoInput>
+  <PrinterRedirection>Disable</PrinterRedirection>
+  <ClipboardRedirection>Default</ClipboardRedirection>
+  <MemoryInMB>8192</MemoryInMB>
+
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>D:\Andys Projects\LokProgrammer-Sandbox\shared</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\shared</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+    <MappedFolder>
+      <HostFolder>D:\Andys Projects\LokProgrammer-Sandbox\tools</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\tools</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+
+  <LogonCommand>
+    <Command>powershell.exe -NoExit -ExecutionPolicy Bypass -File C:\Users\WDAGUtilityAccount\Desktop\tools\Inspect-Installer.ps1</Command>
+  </LogonCommand>
+
+</Configuration>
