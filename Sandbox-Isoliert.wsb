@@ -1,4 +1,4 @@
-<Configuration>
+﻿<Configuration>
 
   <!-- =====================================================================
        STUFE 2 - AUSFUEHREN, VOLL ISOLIERT
@@ -18,12 +18,12 @@
 
   <MappedFolders>
     <MappedFolder>
-      <HostFolder>D:\Andys Projects\LokProgrammer-Sandbox\shared</HostFolder>
+      <HostFolder>C:\LokProgrammer-Sandbox\shared</HostFolder>
       <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\shared</SandboxFolder>
       <ReadOnly>true</ReadOnly>
     </MappedFolder>
     <MappedFolder>
-      <HostFolder>D:\Andys Projects\LokProgrammer-Sandbox\tools</HostFolder>
+      <HostFolder>C:\LokProgrammer-Sandbox\tools</HostFolder>
       <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\tools</SandboxFolder>
       <ReadOnly>true</ReadOnly>
     </MappedFolder>

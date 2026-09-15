@@ -52,9 +52,9 @@ Alle Fehler fielen beim Test gegen echte Dateien auf, nicht bei der Syntaxprüfu
   aussagelos` aus.
 - **`New-Item -Force` auf den Registry-Key `AppCompatFlags\Layers`.** Bei einem
   *existierenden* Key legt `-Force` ihn neu an und löscht alle Werte. Hat beim Testlauf
-  sechs Kompatibilitätseinträge des Nutzers gelöscht (Wargaming, OneDrive, Riot Client,
-  DVStart, JiveX, Boxing School). Aus den Agent-Protokollen rekonstruiert und
-  wiederhergestellt, mit `reg.exe` verifiziert. Jetzt: Anlegen nur bei `-not (Test-Path)`,
+  sechs bestehende Kompatibilitätseinträge fremder Programme gelöscht. Aus den
+  Agent-Protokollen rekonstruiert und wiederhergestellt, mit `reg.exe` verifiziert.
+  Jetzt: Anlegen nur bei `-not (Test-Path)`,
   plus `.reg`-Sicherung vor jeder Änderung.
 - **`RUNASADMIN` als Kompatibilitäts-Flag entfernt.** Es schaltet die UAC-Virtualisierung
   ab — genau das Sicherheitsnetz, das erhalten bleiben sollte —, erzeugt bei jedem Start

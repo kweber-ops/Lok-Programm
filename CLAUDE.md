@@ -129,9 +129,9 @@ reads as a catastrophically broken application when nothing is wrong.
 **Check `$LASTEXITCODE` after `MpCmdRun`, never the output text.** 0 = clean, 2 = threat,
 anything else = the scan failed. Text matching reports scan failures as malware hits.
 
-**Defender is not necessarily the active scanner.** On the reference host it runs in
-`SxS Passive Mode` with real-time protection off while Avira Security is active, so
-`Get-MpThreat` is empty regardless of what happened. Always resolve the active AV from
+**Defender is not necessarily the active scanner.** Where a third-party AV is installed,
+Defender runs in `SxS Passive Mode` with real-time protection off, so `Get-MpThreat`
+returns nothing regardless of what happened. Always resolve the active product from
 `root\SecurityCenter2` first; an empty Defender history is not an all-clear.
 
 **A Delphi app's runtime errors never reach the Application event log** — the VCL catches

@@ -133,6 +133,11 @@ Und: Ein negativer Befund beweist wenig. Malware erkennt
 
 Prüfen: `Test-Path C:\Windows\System32\WindowsSandbox.exe`
 
+> **Vorher anpassen:** Beide `.wsb`-Dateien binden feste Host-Pfade ein
+> (`C:\LokProgrammer-Sandbox\shared` und `…\tools`). Trag dort den Pfad ein,
+> unter dem dieses Repository bei dir liegt — sonst startet die Sandbox mit
+> leeren Ordnern.
+
 ### Stufe 1 — `Sandbox-Analyse.wsb`
 
 Netzwerk **an**, Zwischenablage **an**, alle Mounts read-only.
@@ -199,19 +204,19 @@ eine Linux-VM mit Wine und COM1 auf `/dev/ttyS0`.
 
 ---
 
-## Dieser Host
+## Den eigenen Host einordnen
 
-Lokal gemessen, nicht geschätzt:
+Diese Werte vor dem VM-Bau selbst erheben — sie entscheiden über die Wahl:
 
-| Befund | Wert | Bedeutung |
+| Befund | Womit prüfen | Warum es zählt |
 |---|---|---|
-| COM1 | `ACPI\PNP0501\0`, OK, bis 115200 Baud | Echter Onboard-16550. Bester Ausgangspunkt. |
-| Hypervisor | aktiv | Kommt von WSL2/VirtualMachinePlatform, **nicht** Hyper-V (`vmms.exe` fehlt) |
-| VBS | Status 2, `SecurityServicesRunning={0}` | Läuft, aber **ohne** HVCI und Credential Guard |
-| Firmware | Legacy-BIOS | Secure Boot nicht verfügbar |
-| CPU | Ryzen 7 2700X, AMD-V an | Reichlich für einen NT5-Gast |
+| Serieller Port | `Get-PnpDevice -Class Ports` | `ACPI\PNP0501` ist ein echter Onboard-16550 und die beste Ausgangslage. USB-Adapter sind die häufigste Fehlerquelle. |
+| Hypervisor | `(Get-CimInstance Win32_ComputerSystem).HypervisorPresent` | Ist einer aktiv, laufen VirtualBox und VMware im langsameren NEM/WHP-Backend. |
+| Herkunft | `Test-Path C:\Windows\System32\vmms.exe` | Fehlt die Datei, kommt der Hypervisor nicht von Hyper-V, sondern meist von WSL2 oder der VirtualMachinePlatform. |
+| VBS | `Get-CimInstance Win32_DeviceGuard` | `SecurityServicesRunning` zeigt, ob HVCI und Credential Guard wirklich laufen — oder ob nur der Hypervisor-Preis bezahlt wird. |
+| CPU | `Get-CimInstance Win32_Processor` | Ein NT5-Gast braucht wenig. Mehr Kerne verschlechtern serielles Timing eher. |
 
-**Konsequenz:** VirtualBox fällt hier auf das langsamere NEM/WHP-Backend
+**Konsequenz bei aktivem Hypervisor:** VirtualBox fällt auf das langsamere NEM/WHP-Backend
 zurück. Für einen Win2000-Gast ist das mit hoher Wahrscheinlichkeit
 trotzdem völlig ausreichend — erst testen, bevor am System geschraubt wird.
 

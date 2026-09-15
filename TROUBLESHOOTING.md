@@ -30,8 +30,9 @@ Fix: Aus einer Konsole starten, damit nichts wegklickt, und auf die Messagebox a
 
 ### Der Virenscanner hat sie kassiert
 
-Auf diesem Host ist **Avira** aktiv, nicht Defender (`AMRunningMode: SxS Passive Mode`).
-Der Fund steht in der Avira-Quarantäne, nicht im Defender-Verlauf.
+Prüfe zuerst, **welcher** Scanner überhaupt aktiv ist. Ist ein Drittprodukt installiert,
+läuft Defender im `SxS Passive Mode` und scannt gar nicht — der Fund steht dann in dessen
+Quarantäne, nicht im Defender-Verlauf, und `Get-MpThreat` bleibt leer.
 
 ```powershell
 .\tools\Get-DefenderVerdict.ps1 -Days 90
@@ -39,7 +40,7 @@ Der Fund steht in der Avira-Quarantäne, nicht im Defender-Verlauf.
 
 Reihenfolge beim Wiederherstellen: **erst Ausnahme setzen, dann wiederherstellen.**
 Umgekehrt fängt der Echtzeitschutz die Datei beim Zurückschreiben sofort wieder ab.
-Echtzeit- und On-Demand-Ausnahmen sind in Avira **getrennte Listen** — nur eine zu setzen
+Echtzeit- und On-Demand-Ausnahmen sind bei vielen Scannern **getrennte Listen** — nur eine zu setzen
 bedeutet, dass der nächste Vollscan die Datei Wochen später doch einkassiert.
 
 Niemals den Downloads-Ordner, `%TEMP%` oder einen Laufwerksstamm als Ausnahme eintragen.
@@ -108,12 +109,17 @@ deutlich zuverlässiger. Wenn ein Adapter unvermeidlich ist: in einer VM den
 
 ## Kein Ton beim Vorhören
 
-Die Software nutzt **DirectSound**. Auf diesem Host existieren sieben Audio-Endpunkte,
-darunter ein Funk-Headset (zeitweise abwesend), NVIDIA Virtual Audio, DroidCam und zwei
-VB-Audio Virtual Cables — eines mit Status *Error*.
+Die Software nutzt **DirectSound**. Das ist auf modernen Rechnern die häufigste
+Stummschalt-Ursache, weil dort oft ein Dutzend Audio-Endpunkte existieren: Funk-Headsets
+(zeitweise abwesend), GPU-Audio, virtuelle Kabel von Streaming- und Konferenzsoftware,
+gelegentlich eines mit Status *Error*.
 
 DirectSound nimmt das **Standardgerät**. Ist das ein virtuelles oder abgeschaltetes
 Gerät, bleibt es stumm — ohne Fehlermeldung.
+
+```powershell
+Get-CimInstance Win32_SoundDevice | Select-Object Name, Status
+```
 
 Fix: Vor dem Vorhören ein reales Ausgabegerät als Standard setzen
 (*Systemsteuerung → Sound → Wiedergabe*). Prüfen, ob `DSound.dll` geladen ist:
@@ -263,7 +269,18 @@ bcdedit /copy "{current}" /d "Windows 10 ohne Hypervisor"
 bcdedit /set "{<neue-GUID>}" hypervisorlaunchtype off
 ```
 
-— dann bleiben WSL2 und Docker im Alltagseintrag unangetastet. Auf diesem Host laufen
-ohnehin **null** VBS-Schutzdienste (`SecurityServicesRunning = {0}`, Legacy-BIOS ohne
-Secure Boot), der Sicherheitsverlust wäre also gering. Die relevante Frage ist nicht
-Sicherheit, sondern ob WSL2 und Docker gebraucht werden.
+— dann bleiben WSL2 und Docker im Alltagseintrag unangetastet.
+
+Wie groß der Sicherheitsverlust wäre, hängt davon ab, ob VBS überhaupt etwas schützt.
+Vorher selbst prüfen:
+
+```powershell
+Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard |
+  Select-Object VirtualizationBasedSecurityStatus, SecurityServicesConfigured, SecurityServicesRunning
+```
+
+Ist `SecurityServicesRunning` leer, laufen weder HVCI noch Credential Guard — dann wird
+der Hypervisor-Preis bezahlt, ohne die Gegenleistung zu bekommen, und die relevante Frage
+ist nicht Sicherheit, sondern ob WSL2 und Docker gebraucht werden. Laufen dort Dienste,
+gilt die klassische Abwägung in voller Härte: HVCI ist eine der wenigen wirksamen
+Gegenmaßnahmen gegen BYOVD-Angriffe. Dann ist der zweite Booteintrag Pflicht statt Kür.
