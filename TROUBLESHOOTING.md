@@ -30,6 +30,28 @@ Fix: Aus einer Konsole starten, damit nichts wegklickt, und auf die Messagebox a
 
 ### Der Virenscanner hat sie kassiert
 
+> **Schnellster Weg:** [`tools/Check-LokProgrammer.ps1`](tools/Check-LokProgrammer.ps1)
+> beantwortet alles auf einmal — ist die Datei echt, welcher Scanner ist aktiv, was
+> hat er gemeldet, und was tut man dann. Das Skript ist eigenständig; es genügt, dem
+> Betroffenen diese eine Datei zu schicken.
+>
+> ```powershell
+> .\Check-LokProgrammer.ps1
+> ```
+
+Der entscheidende Punkt: Die Datei lässt sich **beweisbar** als Original identifizieren.
+Der SHA1 `8F0745D21BC0A4296BF6B527EC39009AD0E0BEA9` steht im CDX-Index des Internet
+Archive für die Captures vom 16.01., 17.01. und 24.02.2006. Stimmt er, ist jeder
+Scannertreffer ein Fehlalarm — und das ist keine Vermutung, sondern belegt.
+
+Warum ausgerechnet Defender anspringt und andere Scanner nicht: Es ist die Kombination
+aus fehlender Signatur, fehlender Versionsressource, sehr geringer Verbreitung,
+Delphi-Kompilat, direktem COM-Port-Zugriff und einer Firmware-Schreibfunktion. Jedes
+Merkmal für sich ist harmlos; zusammen ergeben sie für ein ML-Modell ein Muster, das
+statistisch nach Dropper aussieht. Deshalb tragen solche Treffer fast immer die Endung
+`!ml` — sie sind geraten, nicht signaturbasiert.
+
+
 Prüfe zuerst, **welcher** Scanner überhaupt aktiv ist. Ist ein Drittprodukt installiert,
 läuft Defender im `SxS Passive Mode` und scannt gar nicht — der Fund steht dann in dessen
 Quarantäne, nicht im Defender-Verlauf, und `Get-MpThreat` bleibt leer.
