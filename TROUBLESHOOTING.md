@@ -44,12 +44,31 @@ Der SHA1 `8F0745D21BC0A4296BF6B527EC39009AD0E0BEA9` steht im CDX-Index des Inter
 Archive für die Captures vom 16.01., 17.01. und 24.02.2006. Stimmt er, ist jeder
 Scannertreffer ein Fehlalarm — und das ist keine Vermutung, sondern belegt.
 
-Warum ausgerechnet Defender anspringt und andere Scanner nicht: Es ist die Kombination
-aus fehlender Signatur, fehlender Versionsressource, sehr geringer Verbreitung,
-Delphi-Kompilat, direktem COM-Port-Zugriff und einer Firmware-Schreibfunktion. Jedes
-Merkmal für sich ist harmlos; zusammen ergeben sie für ein ML-Modell ein Muster, das
-statistisch nach Dropper aussieht. Deshalb tragen solche Treffer fast immer die Endung
-`!ml` — sie sind geraten, nicht signaturbasiert.
+### Warum ausgerechnet Defender anspringt
+
+Die tragenden Faktoren sind **fehlende Signatur, fehlende Versionsressource, eine
+Verbreitung nahe null und das Delphi-Ähnlichkeitsprofil**. Der direkte COM-Port-Zugriff
+und die Firmware-Schreibfunktion spielen dagegen **keine relevante Rolle** — das war eine
+naheliegende, aber falsche Annahme.
+
+Entscheidend ist, was der Cloud-Schutz überhaupt bewertet. Microsoft listet die
+übermittelten Merkmale namentlich auf, und darunter sind `Ctph`, `Lshash`, `ClusterHash`
+und `ImpHash` — allesamt **Ähnlichkeitsmaße**. Die Cloud fragt also nicht nur „kenne ich
+diesen Hash", sondern „welchen bekannten Dateien ähnelt diese". Genau dort schlägt Delphi
+durch: Delphi-Kompilate sind bei Droppern und Crypter-Ausgaben massiv überrepräsentiert.
+
+Sechs der übermittelten Merkmale sind Signer-Merkmale. Bei dieser Datei sind alle sechs
+leer — und „leer" ist im Modell kein neutraler Zustand, sondern ein eigener Merkmalswert.
+Es ist zugleich die einzige Brücke, über die legitime Software normalerweise entlastet
+wird.
+
+Die Verbreitung ist dabei der stärkste Einzelfaktor, und sie ist **nicht konfigurierbar**.
+Microsoft dazu in der ASR-FAQ auf die Frage, ob man die Kriterien einstellen könne:
+*„No. Microsoft cloud protection maintains the criteria using data gathered from around
+the world."*
+
+Kurz: Das Dateiprofil ist nicht verdächtig, es ist zwanzig Jahre alt und wird an heutigen
+Basisraten gemessen.
 
 
 Prüfe zuerst, **welcher** Scanner überhaupt aktiv ist. Ist ein Drittprodukt installiert,

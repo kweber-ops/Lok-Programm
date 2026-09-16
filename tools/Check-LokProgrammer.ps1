@@ -137,30 +137,64 @@ Write-Host ''
 Say 'Defender-Funde:' Cyan
 $found = $false
 try {
-    $t = Get-MpThreat -ErrorAction Stop
-    if ($t) {
+    # Get-MpThreatDetection liefert den Namen NICHT mit - er muss ueber die
+    # ThreatID aus Get-MpThreat nachgeschlagen werden.
+    $names = @{}
+    Get-MpThreat -ErrorAction Stop | ForEach-Object { $names[[string]$_.ThreatID] = $_.ThreatName }
+
+    $det = Get-MpThreatDetection -ErrorAction SilentlyContinue |
+           Sort-Object InitialDetectionTime -Descending | Select-Object -First 10
+    if ($det) {
         $found = $true
-        foreach ($x in $t) {
-            Say "  Name       : $($x.ThreatName)" Red
-            Say "  Erstfund   : $($x.InitialDetectionTime)"
-            if ($x.Resources) { $x.Resources | ForEach-Object { Say "  Datei      : $_" } }
+        foreach ($d in $det) {
+            Say "  Zeit       : $($d.InitialDetectionTime)" Red
+            Say "  Name       : $($names[[string]$d.ThreatID])" Red
+            if ($d.Resources) { $d.Resources | ForEach-Object { Say "  Datei      : $_" } }
+            Say "  Aktion ok  : $($d.ActionSuccess)"
             Write-Host ''
         }
+    } elseif ($names.Count) {
+        $found = $true
+        $names.Values | ForEach-Object { Say "  Name: $_" Red }
     } else { Say '  keine Eintraege' Green }
 } catch { Say "  nicht abrufbar: $($_.Exception.Message)" Yellow }
 
+# Ereignisprotokoll. Der Kanalname ist sprachunabhaengig.
+# Event 1116 traegt die entscheidenden Felder "Detection Type" und
+# "Detection Source" - damit laesst sich objektiv belegen, WELCHE Art
+# von Treffer es war, statt sie aus dem Namen zu erraten.
 try {
     $ev = Get-WinEvent -FilterHashtable @{
         LogName = 'Microsoft-Windows-Windows Defender/Operational'; Id = 1006, 1015, 1116, 1117
-    } -MaxEvents 10 -ErrorAction Stop
+    } -MaxEvents 5 -ErrorAction Stop
     if ($ev) {
         $found = $true
-        Say 'Ereignisprotokoll:' Cyan
+        Write-Host ''
+        Say 'Ereignisprotokoll (Art des Treffers):' Cyan
         $ev | ForEach-Object {
             Say "  [$($_.TimeCreated)] ID $($_.Id)" Red
-            ($_.Message -split "`n" | Where-Object { $_ -match 'Name:|Pfad:|Path:' } | Select-Object -First 2) |
-                ForEach-Object { Say "     $($_.Trim())" }
+            ($_.Message -split "`n" |
+             Where-Object { $_ -match 'Detection Type|Erkennungstyp|Detection Source|Erkennungsquelle|Detection Origin|Name:|Pfad:|Path:|Action|Aktion' } |
+             Select-Object -First 6) | ForEach-Object { Say "     $($_.Trim())" }
+            Write-Host ''
         }
+    }
+} catch { }
+
+# ASR-Blockade ist KEIN Virenfund. Sie erscheint als eigenes Ereignis und
+# traegt gar keinen Bedrohungsnamen - das trennschaerfste Merkmal ueberhaupt.
+try {
+    $asr = Get-WinEvent -FilterHashtable @{
+        LogName = 'Microsoft-Windows-Windows Defender/Operational'; Id = 1121, 1122
+    } -MaxEvents 5 -ErrorAction Stop
+    if ($asr) {
+        $found = $true
+        Say 'ASR-REGEL hat blockiert - das ist KEIN Malware-Fund:' Yellow
+        $asr | ForEach-Object { Say "  [$($_.TimeCreated)] ID $($_.Id)" Yellow }
+        Say '  Eine Attack-Surface-Reduction-Regel bewertet Verbreitung und' DarkGray
+        Say '  Alter einer Datei, nicht ihren Inhalt. Kein Bedrohungsname,' DarkGray
+        Say '  keine Aussage ueber Schadcode.' DarkGray
+        Write-Host ''
     }
 } catch { }
 
@@ -174,34 +208,60 @@ if (-not $found -and -not $thirdParty) {
     Say 'Sie laesst sich mit "Weitere Informationen" -> "Trotzdem ausfuehren"' Gray
     Say 'wegklicken.' Gray
 } else {
-    Say 'Bedrohungsnamen richtig lesen:' Cyan
-    Say '  Endung !ml         -> reine Machine-Learning-Schaetzung,' Yellow
-    Say '                        kein Signaturtreffer. Fehlalarm-typisch.' Yellow
-    Say '  Wacatac, Wacapew, Sabsik, Bearfoos, Presenoker, Zpevdo' Yellow
-    Say '                     -> generische Sammelnamen, ebenfalls typisch.' Yellow
-    Say '  HackTool, PUA      -> korrekt erkannt, aber nicht zwingend boese' Yellow
-    Say '  Konkreter Familienname OHNE !ml (Emotet, Zbot, Qakbot)' Red
-    Say '                     -> das waere ernst zu nehmen.' Red
+    Say 'VIER Trefferarten - sie bedeuten voellig Verschiedenes:' Cyan
+    Say '  1. SIGNATUR    konkreter Familienname OHNE !-Suffix' Red
+    Say '                 (Emotet, Zbot, Qakbot). Das waere ernst.' Red
+    Say '  2. HEURISTIK   von Menschen geschriebene Regel, lokal.' Yellow
+    Say '  3. ML-VERDACHT Endung !ml, !pz oder !MTB. Der Familienname' Yellow
+    Say '                 davor ist dann BEDEUTUNGSLOS - ein Score lag' Yellow
+    Say '                 ueber der Schwelle, mehr nicht.' Yellow
+    Say '                 Typisch: Wacatac, Wacapew, Sabsik, Bearfoos,' Yellow
+    Say '                 Presenoker, Zpevdo.' Yellow
+    Say '  4. REPUTATION  Block at First Sight, ASR, SmartScreen.' Green
+    Say '                 Sagt NICHTS ueber Schadcode aus - nur, dass die' Green
+    Say '                 Datei selten und unbekannt ist.' Green
+    Write-Host ''
+    Say 'Welche Art es war, steht im Ereignisprotokoll oben unter' DarkGray
+    Say '"Detection Type" und "Detection Source" - nicht im Namen raten.' DarkGray
     Write-Host ''
     Say 'Passt der Hash oben, ist die Datei nachweislich das Original' Green
-    Say 'von 2006 - dann ist der Treffer ein Fehlalarm.' Green
+    Say 'von 2006 - dann ist der Treffer in JEDEM der vier Faelle ein' Green
+    Say 'Fehlalarm.' Green
     Write-Host ''
     Say 'REIHENFOLGE beim Beheben - unbedingt einhalten:' Cyan
-    Say '  1. ZUERST die Ausnahme setzen (als Administrator):' White
+    Say '  1. Quarantaene auflisten, um den genauen Namen zu bekommen:' White
+    Say '     $plat = Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform" -Directory |' White
+    Say '             Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1' White
+    Say '     $mp = Join-Path $plat.FullName MpCmdRun.exe' White
+    Say '     & $mp -Restore -ListAll' White
+    Say '  2. ZUERST die Ausnahme setzen (als Administrator, VOLLER Dateipfad):' White
     Say "     Add-MpPreference -ExclusionPath 'C:\LokProgrammer\LokProgrammer.exe'" White
-    Say '  2. DANN aus der Quarantaene holen:' White
-    Say '     & "$env:ProgramFiles\Windows Defender\MpCmdRun.exe" -Restore -Name <Bedrohungsname>' White
-    Say ''
+    Say '  3. DANN wiederherstellen:' White
+    Say '     & $mp -Restore -Name <Bedrohungsname aus Schritt 1>' White
+    Write-Host ''
     Say '  Umgekehrt faengt der Echtzeitschutz die Datei beim Zurueckschreiben' DarkGray
     Say '  sofort wieder ab.' DarkGray
     Write-Host ''
     Say 'Fehlalarm bei Microsoft melden (dauert meist wenige Tage):' Cyan
     Say '  https://www.microsoft.com/en-us/wdsi/filesubmission' White
+    Say 'Danach Signaturen aktualisieren und die Ausnahme WIEDER ENTFERNEN:' Cyan
+    Say '  Update-MpSignature' White
+    Say "  Remove-MpPreference -ExclusionPath 'C:\LokProgrammer\LokProgrammer.exe'" White
     Write-Host ''
     Say 'NICHT tun:' Red
-    Say '  - Echtzeitschutz komplett abschalten' Red
-    Say '  - ganze Ordner wie Downloads oder %TEMP% ausschliessen' Red
-    Say '  - die Datei aus einer anderen Quelle als esu.eu holen' Red
+    Say '  - Echtzeitschutz abschalten. Unverhaeltnismaessig fuer eine Datei.' Red
+    Say '  - Ganze Ordner ausschliessen (Downloads, Temp, Desktop).' Red
+    Say '    Das ist ein bekanntes Angreifermuster.' Red
+    Say '  - ExclusionExtension .exe oder ExclusionProcess verwenden.' Red
+    Say '    ExclusionProcess schuetzt die Datei NICHT vor Quarantaene -' Red
+    Say '    es betrifft nur Dateien, die der Prozess oeffnet.' Red
+    Say '  - Umbenennen oder in ein Archiv packen. Erkannt wird der Inhalt.' Red
+    Say '  - Die Datei aus einer Drittquelle holen. Das ist die' Red
+    Say '    gefaehrlichste Variante - so wird aus einem Fehlalarm ein' Red
+    Say '    echter Befall.' Red
+    Write-Host ''
+    Say 'Oberflaeche direkt oeffnen (sprachunabhaengig):' DarkGray
+    Say '  Start-Process windowsdefender://threat' White
 }
 
 Write-Host ''
